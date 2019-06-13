@@ -15,22 +15,22 @@ def shape(path, fi, pathRes,visual):
 	im = cv2.imread(path+'/'+fi)
 	rows,cols,junk = im.shape
 	print im.shape
-	if cols < 7010:
+	if cols < 7000:
 		return
 	#np.full
 	#Size (rows, cols)
 	#Content value
 	#type of value	(np.uint -> 1-byte unsigned integer)
-	up_filled_blank= np.full((2*rows, 7000,3),0,np.uint8)
-	down_filled_blank= np.full((2*rows, 7000,3),0,np.uint8)
-	castIm = np.full((100, 7000),0,np.uint8)
+	up_filled_blank= np.full((2*rows, 6990,3),0,np.uint8)
+	down_filled_blank= np.full((2*rows, 6990,3),0,np.uint8)
+	castIm = np.full((100, 6990),0,np.uint8)
 	rowsBl, colsBl, junk = down_filled_blank.shape
 	
-	#up = im[0:rows/2, 10: cols -10]
-	#down = im[rows/2: rows, 10: cols -10]
-
-	up_filled_blank[rows+(rows+1)/2:rows*2, 0:colsBl]=im[0:rows/2, 10: cols -(cols-7010)]
-	down_filled_blank[0:(rows+1)/2, 0:colsBl]=im[rows/2: rows, (cols-7010): cols-10]
+	#up = im[0:rows/2, 15: cols -15]
+	#down = im[rows/2: rows, 15: cols -15]
+	print im.shape
+	up_filled_blank[rows+(rows+1)/2:rows*2, 0:colsBl]=im[0:rows/2, 15: cols -(cols-7005)]
+	down_filled_blank[0:(rows+1)/2, 0:colsBl]=im[rows/2: rows, (cols-7005): cols-15]
 	
 	M = cv2.getRotationMatrix2D((colsBl/2,rowsBl/2),180,1)
 	down_filled_blank = cv2.warpAffine(down_filled_blank,M,(colsBl,rowsBl))	
