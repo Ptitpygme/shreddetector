@@ -14,24 +14,31 @@ def preparation(path, pathRes,visual):
 def shape(path, fi, pathRes,visual):
 	im = cv2.imread(path+'/'+fi)
 	rows,cols,junk = im.shape
+	print fi
 	print im.shape
-	if cols < 7000:
+	if cols < rows:
+		print('Reject ', fi, 'wrong orientation')
+		return	
+	if cols < 6990:
+		print('Reject ',fi,' , too short for examination.')
 		return
 	#np.full
 	#Size (rows, cols)
 	#Content value
 	#type of value	(np.uint -> 1-byte unsigned integer)
-	up_filled_blank= np.full((2*rows, 6990,3),0,np.uint8)
-	down_filled_blank= np.full((2*rows, 6990,3),0,np.uint8)
-	castIm = np.full((100, 6990),0,np.uint8)
-	rowsBl, colsBl, junk = down_filled_blank.shape
+	up_filled_blank= np.full((2*rows, 6980,3),0,np.uint8)
+	down_filled_blank= np.full((2*rows, 6982,3),0,np.uint8)
+	castIm = np.full((100, 6980),0,np.uint8)
+	rowsBl, colsBl, junk = up_filled_blank.shape
 	
-	#up = im[0:rows/2, 15: cols -15]
+	up = im[0:rows/2+20, 15: cols -(cols-6995)]
 	#down = im[rows/2: rows, 15: cols -15]
 	print im.shape
-	up_filled_blank[rows+(rows+1)/2:rows*2, 0:colsBl]=im[0:rows/2, 15: cols -(cols-7005)]
-	down_filled_blank[0:(rows+1)/2, 0:colsBl]=im[rows/2: rows, (cols-7005): cols-15]
+	print('Up: ',up.shape)
+	up_filled_blank[(rows+(rows+1)/2)-20:rowsBl, 0:colsBl]=im[0:rows/2+20, 15: cols -(cols-6995)]
+	down_filled_blank[0:((rows+1)/2)+20, 1:colsBl+1]=im[(rows/2)-20: rows, (cols-6995): cols-15]
 	
+		
 	M = cv2.getRotationMatrix2D((colsBl/2,rowsBl/2),180,1)
 	down_filled_blank = cv2.warpAffine(down_filled_blank,M,(colsBl,rowsBl))	
 	
@@ -57,7 +64,6 @@ def shape(path, fi, pathRes,visual):
 	print 'Down'
 	arrSideDown=calcSide(thresh_Down, smooth_Down)
 	fi=fi.replace('.tiff','')
-	print fi
 	flatThreshUp=flat(thresh_Up, arrSideUp, visual)
 	
 	
