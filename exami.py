@@ -3,8 +3,9 @@ import cv2
 import os
 
 
-def preparation(path, pathRes,visual):
-	clearResultFolder(pathRes)
+def preparation(path, pathRes,visual, clear):
+	if clear == 1:
+		clearResultFolder(pathRes)
 	filelist= os.listdir(path)
 	print filelist
 	for fi in filelist:

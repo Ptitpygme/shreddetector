@@ -85,7 +85,7 @@ def createSet(path, image, visual):
 			crop= im[y:y+h,x:x+w]
 			print ("Coordonnee centerRect: ",centerRect(rect))
 			
-			dst=capture(im,rect,"/udd/cvolantv/Pictures/ScanDetector/ResultCatcher/sR"+str(i)+".tiff")
+			dst=capture(im,rect,"/udd/cvolantv/Pictures/ScanDetector/ResultCatcher/"+image+"sR"+str(i)+".tiff")
 
 		### Different display windows
 
@@ -99,12 +99,13 @@ def createSet(path, image, visual):
 			cv2.imshow('Contour', im)
 			cv2.namedWindow('Rotation',cv2.WINDOW_NORMAL)
 			cv2.imshow('Rotation', dst)
-			'''
+
 			cv2.namedWindow('Strip',cv2.WINDOW_NORMAL)
 			cv2.imshow('Strip', crop)
 			k = cv2.waitKey(0) & 0xFF
 			if k==27:
 				cv2.destroyAllWindows()
+			'''
 			## Unique window, a better presentation but less effective and take time to load
 			'''
 			images=[thresh,im,dst,crop]
