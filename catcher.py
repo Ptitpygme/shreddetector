@@ -5,49 +5,18 @@ from matplotlib import pyplot as plt
 
 
 #Create a set of image of strips from an image with all the strips
-def createSet(path, image, visual):
+def createSet(path, image,clear, visual):
 	#We clearing the folder of results
-	clearResultFolder(path)
+	if clear == 1:
+		clearResultFolder('/udd/cvolantv/Pictures/ScanDetector/ResultCatcher')
 	
 	filename=path+'/'+image
-
-	'''
-	filenameWGray="/udd/cvolantv/Pictures/ScanDetector/A3/A3Gray.jpeg"
-
-	# Experimentation of image opening and masks
-	lower_white = np.array([200,120,120])
-	upper_white = np.array([255,255,255])
-
-	mask = cv2.inRange(im, lower_white, upper_white)
-
-	result= cv2.bitwise_and(im,im,mask= mask)
-	cv2.imwrite(filenameWGray,result)
-
-	cv2.namedWindow('A3', cv2.WINDOW_NORMAL)
-	cv2.imshow('A3',im)
-	cv2.namedWindow('Mask', cv2.WINDOW_NORMAL)
-	cv2.imshow('Mask',mask)
-	cv2.namedWindow('Result', cv2.WINDOW_NORMAL)
-	cv2.imshow('Result',result)
-	k = cv2.waitKey(0) & 0xFF
-	if k==27:
-		cv2.destroyAllWindows()
-
-	#Thresholding of pixels
-
-	resultGray = cv2.imread(filenameWGray, cv2.COLOR_BGR2GRAY)
+	print filename
 	
-	#First parameter: image
-	#Second parameter: Intensity of gray to activate the thresh
-	#Third parameter: Intensity of gray at the result
-	#Fourth parameter: Type of result
-	ret, thresh = cv2.threshold(resultGray,127,255,cv2.THRESH_BINARY)
-	'''
-
 	#Attempting to get the contours
 	kernel = np.ones((5,5),np.uint8)
 	ori = cv2.imread(filename)
-
+	print ori.shape
 	im = ori[100:6900, 100:9900]
 	print("Shape: ",im.shape)
 	rows,cols,biin = im.shape
@@ -88,33 +57,35 @@ def createSet(path, image, visual):
 			dst=capture(im,rect,"/udd/cvolantv/Pictures/ScanDetector/ResultCatcher/"+image+"sR"+str(i)+".tiff")
 
 		### Different display windows
+			'''
+			if dst != -1:
+			'''
+				##Multiple windows (sensible to crash)
+			'''
+				cv2.namedWindow('Threshold', cv2.WINDOW_NORMAL)
+				cv2.imshow('Threshold',thresh)
+				cv2.namedWindow('ThresholdOpen', cv2.WINDOW_NORMAL)
+				cv2.imshow('ThresholdOpen',thresh1)
+				cv2.namedWindow('Contour',cv2.WINDOW_NORMAL)
+				cv2.imshow('Contour', im)
+				cv2.namedWindow('Rotation',cv2.WINDOW_NORMAL)
+				cv2.imshow('Rotation', dst)
 
-			##Multiple windows (sensible to crash)
+				cv2.namedWindow('Strip',cv2.WINDOW_NORMAL)
+				cv2.imshow('Strip', crop)
+				k = cv2.waitKey(0) & 0xFF
+				if k==27:
+					cv2.destroyAllWindows()
 			'''
-			cv2.namedWindow('Threshold', cv2.WINDOW_NORMAL)
-			cv2.imshow('Threshold',thresh)
-			cv2.namedWindow('ThresholdOpen', cv2.WINDOW_NORMAL)
-			cv2.imshow('ThresholdOpen',thresh1)
-			cv2.namedWindow('Contour',cv2.WINDOW_NORMAL)
-			cv2.imshow('Contour', im)
-			cv2.namedWindow('Rotation',cv2.WINDOW_NORMAL)
-			cv2.imshow('Rotation', dst)
-
-			cv2.namedWindow('Strip',cv2.WINDOW_NORMAL)
-			cv2.imshow('Strip', crop)
-			k = cv2.waitKey(0) & 0xFF
-			if k==27:
-				cv2.destroyAllWindows()
+				## Unique window, a better presentation but less effective and take time to load
 			'''
-			## Unique window, a better presentation but less effective and take time to load
-			'''
-			images=[thresh,im,dst,crop]
-			titles=['Threshold','Contour','Rotation','Strip']
-			for i in xrange(4):
-				plt.subplot(2,2,i+1),plt.imshow(images[i],'gray')
-				plt.title(titles[i])
-				plt.xticks([]),plt.yticks([])
-			plt.show()
+				images=[thresh,im,dst,crop]
+				titles=['Threshold','Contour','Rotation','Strip']
+				for i in xrange(4):
+					plt.subplot(2,2,i+1),plt.imshow(images[i],'gray')
+					plt.title(titles[i])
+					plt.xticks([]),plt.yticks([])
+				plt.show()
 			'''
 
 def centerRect(rect):
@@ -140,13 +111,20 @@ def capture (im, rect, path):
 		yH=np.int0(rect[0][1] + (rect[1][0]/2))
 		x=np.int0(rect[0][0] - (rect[1][1]/2))
 		xW=np.int0(rect[0][0] + (rect[1][1]/2))
-	print ("y: ",y,"yH: ",yH,"x: ", x,"xW: ", xW)	
-	capt = dst[y:yH, x:xW]
-	cv2.imwrite(path,capt)
-	return dst
-
+	print ("y: ",y,"yH: ",yH,"x: ", x,"xW: ", xW)
+	if (xW-x) > 6000:	
+		capt = dst[y:yH, x:xW]
+		cv2.imwrite(path,capt)
+		return dst
+	else:
+		return -1
+	
 def clearResultFolder(path):
-	filelist= os.listdir('/udd/cvolantv/Pictures/ScanDetector/ResultCatcher')
+	filelist= os.listdir(path)
 	print filelist
 	for f in filelist:
-		os.remove('/udd/cvolantv/Pictures/ScanDetector/ResultCatcher/'+f)
+		os.remove(path+'/'+f)
+		
+		
+		
+		

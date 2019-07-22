@@ -15,8 +15,13 @@ from tqdm import tqdm
 
 path='/udd/cvolantv/Pictures/ScanDetector/ResultPreparation'
 sizeIm = 6980
-
+#Take an image in black and white and return the proportion white pixels
+#
 def proportionWB(im):
+	"""
+	Take an image in black and white and return the proportion white pixels
+	-im: image in black/white to take the proportion
+	"""
 	imReduce= im[0:50, 2000:5000]
 	rows,cols = imReduce.shape
 	label, count = np.unique(imReduce, return_counts=True)
@@ -88,6 +93,6 @@ def differences(imRes,imRef,imComp,nbIm,name):
 	if k==27:
 		cv2.destroyAllWindows()
 	'''
-	cv2.imwrite('/udd/cvolantv/Pictures/ScanDetector/ResultEvaluation/ResCombine'+name+'.tiff', imRes)	
+	cv2.imwrite('/udd/cvolantv/Pictures/ScanDetector/FFT/ResCombine'+name+'.tiff', imRes)	
 	return imRes
 

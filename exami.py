@@ -3,24 +3,23 @@ import cv2
 import os
 
 
-def preparation(path, pathRes,visual, clear):
+def preparation(path, pathRes,visual, clear,thresh):
 	if clear == 1:
 		clearResultFolder(pathRes)
 	filelist= os.listdir(path)
 	print filelist
 	for fi in filelist:
-		shape(path, fi, pathRes,visual)
+		shape(path, fi, pathRes,visual,thresh)
 
 #Create the images of differents sides of strip without drops
-def shape(path, fi, pathRes,visual):
+def shape(path, fi, pathRes,visual,thresh):
 	im = cv2.imread(path+'/'+fi)
 	rows,cols,junk = im.shape
-	print fi
 	print im.shape
 	if cols < rows:
 		print('Reject ', fi, 'wrong orientation')
 		return	
-	if cols < 6990:
+	if cols < 7000:
 		print('Reject ',fi,' , too short for examination.')
 		return
 	#np.full
@@ -28,20 +27,22 @@ def shape(path, fi, pathRes,visual):
 	#Content value
 	#type of value	(np.uint -> 1-byte unsigned integer)
 	up_filled_blank= np.full((2*rows, 6980,3),0,np.uint8)
-	down_filled_blank= np.full((2*rows, 6982,3),0,np.uint8)
+	down_filled_blank= np.full((2*rows, 6980,3),0,np.uint8)
 	castIm = np.full((100, 6980),0,np.uint8)
 	rowsBl, colsBl, junk = up_filled_blank.shape
 	
 	up = im[0:rows/2+20, 15: cols -(cols-6995)]
 	#down = im[rows/2: rows, 15: cols -15]
-	print im.shape
-	print('Up: ',up.shape)
-	up_filled_blank[(rows+(rows+1)/2)-20:rowsBl, 0:colsBl]=im[0:rows/2+20, 15: cols -(cols-6995)]
-	down_filled_blank[0:((rows+1)/2)+20, 1:colsBl+1]=im[(rows/2)-20: rows, (cols-6995): cols-15]
+
+	up_filled_blank[(rows+(rows+1)/2)-20:rowsBl, 0:colsBl]=im[0:rows/2+20,cols-6995: cols-15]
+	down_filled_blank[0:((rows+1)/2)+20, 0:colsBl]=im[(rows/2)-20: rows, cols-6995: cols-15]
+	#down_filled_blank[0:((rows+1)/2)+20, 1:colsBl+1]=im[(rows/2)-20: rows, (cols-6995): cols-15]
 	
 		
-	M = cv2.getRotationMatrix2D((colsBl/2,rowsBl/2),180,1)
-	down_filled_blank = cv2.warpAffine(down_filled_blank,M,(colsBl,rowsBl))	
+	#M = cv2.getRotationMatrix2D((colsBl/2,rowsBl/2),180,1)
+	#down_filled_blank = cv2.warpAffine(down_filled_blank,M,(colsBl,rowsBl))
+	down_filled_blank = np.flipud(down_filled_blank)
+	
 	
 	if visual==1:
 		cv2.namedWindow('Im', cv2.WINDOW_NORMAL)
@@ -58,8 +59,8 @@ def shape(path, fi, pathRes,visual):
 		if k==27:
 			cv2.destroyAllWindows()
 	
-	thresh_Down, smooth_Down=smoother(down_filled_blank,visual)
-	thresh_Up, smooth_Up=smoother(up_filled_blank,visual)
+	thresh_Down, smooth_Down=smoother(down_filled_blank,visual,thresh)
+	thresh_Up, smooth_Up=smoother(up_filled_blank,visual,thresh)
 	print 'Up'
 	arrSideUp=calcSide(thresh_Up, smooth_Up)
 	print 'Down'
@@ -75,11 +76,11 @@ def shape(path, fi, pathRes,visual):
 
 	
 #Return the shape, the drop, of the side of a strip
-def smoother(im, visual):
+def smoother(im, visual,thresh):
 	
 	kernel = np.ones((40,40),np.uint8)
 	imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-	ret,thresh = cv2.threshold(imgray,180,255,cv2.THRESH_BINARY)
+	ret,thresh = cv2.threshold(imgray,thresh,255,cv2.THRESH_BINARY)
 	thresh0 = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
 	smooth = cv2.morphologyEx(thresh0, cv2.MORPH_CLOSE, kernel)
 	if visual==1:
@@ -101,7 +102,6 @@ def calcSide(thresh,smooth):
 			if smooth[j,i]==255:
 				nSmooth=nSmooth+1
 		if(nSmooth<11):
-			print (i,'AAAAHHHHH',nSmooth)
 			nSmooth=nSmooth+20
 		
 		arrSide.append((rows-nSmooth)+10)
@@ -128,6 +128,5 @@ def flat(thresh, arrSide,visual):
 #Clearing the folder of past results	
 def clearResultFolder(path):
 	filelist= os.listdir(path)
-	print filelist
 	for f in filelist:
 		os.remove(path+'/'+f)
