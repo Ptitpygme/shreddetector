@@ -15,7 +15,7 @@ def getTabHeight (path,fi,thresh):
 			cv2.destroyAllWindows()
 	return (im!=0).argmax(axis=0)
 
-def fft(path,thresh):
+def fft(path,thresh,tab):
 	
 
 
@@ -68,7 +68,7 @@ def fft(path,thresh):
 	plt.show()
 	'''
 
-
+	'''
 	filelist= os.listdir(path)
 	tab=[]
 	for fi in filelist:
@@ -78,12 +78,12 @@ def fft(path,thresh):
 	tabFFT = np.array(tab)
 
 	print 'tabFFT ',tabFFT
-
-	tabMean = np.mean(tabFFT, axis = 0)
+	'''
+	tabMean=np.fft.rfft(tab)
 	
 	print 'tabMean ',tabMean
 	print 'shape ', tabMean.shape
-	t = np.linspace(0, 1, num=6980, endpoint = False)
+	t = np.linspace(0, 1, num=tab.size)
 	T = t[1] - t[0]  # sampling interval 
 	N = tabMean.size
 
@@ -92,7 +92,7 @@ def fft(path,thresh):
 
 	plt.ylabel("Amplitude")
 	plt.xlabel("Frequency")
-	plt.bar(f[:N // 2], np.abs(tabMean)[:N // 2] * 1 / N, width=2)  # 1 / N is a normalization factor
+	plt.plot(f, np.abs(tabMean) * 1 / N)  # 1 / N is a normalization factor
 	plt.show()
 	
 
