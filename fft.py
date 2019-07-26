@@ -4,6 +4,9 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 
+#NOT USED
+
+
 def getTabHeight (path,fi,thresh):
 	im = cv2.imread(path+'/'+fi)
 	im = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)

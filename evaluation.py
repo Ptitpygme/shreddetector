@@ -17,6 +17,11 @@ np.set_printoptions(threshold=sys.maxsize)
 path='/udd/cvolantv/Pictures/ScanDetector/ResultPreparation'
 sizeIm = 6980
 
+
+#NOT USED
+
+
+
 def proportionWB(im):
 	imReduce= im[0:50, 1500:5500]
 	rows,cols = imReduce.shape
