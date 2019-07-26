@@ -35,21 +35,21 @@ def run(path,fileName, step, threshLevel=170,visual=0):
 	if step <1:
 		print 'Catching and preparation phase'
 		#Clearing result's folder
-		preparation.clearResultFolder(path+'/ResultCatcher')
 		preparation.clearResultFolder(path+'/ResultPreparation')
 		
 		pathFile= path+'/'+fileName
 		filelist= os.listdir(pathFile)
 		#For each images extract strip and preapare them
 		for i in filelist:
-			catcher.createSet(pathFile,i,1,0)
+			preparation.clearResultFolder(path+'/ResultCatcher')
+			catcher.createSet(path,fileName,i)
 			preparation.preparation(path+'/ResultCatcher',path+'/ResultPreparation',visual,0,threshLevel)
 		
 	#Step 1
 	#Create an image of strips align with the best superposition possible
 	if step < 2:
 		print 'Align phase'
-		align.preparation(path+'/ResultPreparation')
+		align.preparation(path)
 	#Step 2
 	#Find a small area with clear peaks
 	if step < 3:

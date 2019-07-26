@@ -5,16 +5,16 @@ from matplotlib import pyplot as plt
 
 
 #Create a set of image of strips from an image with all the strips
-def createSet(path, image,clear, visual=0):
+def createSet(path, fileIm, image, visual=0):
 	"""
 	From an image, with a green background, extract all strips on the image.
 	It's possible for the program to take border of the image like a strip.
 	
 	Parameters
 	----------
-	path: Folder of the image to treat
+	path: path to the folder of the image to treat
+	fileIm: name of the folder of images
 	image: Image with strips of paper to extract
-	clear: clearing previous results from the result folder before adding some news
 	visual:
 		0 - Don't create windows of the captures
 		1 - Open windows to show what got capture
@@ -23,13 +23,9 @@ def createSet(path, image,clear, visual=0):
 		
 
 	"""
-	#Clearing the folder of results
-	if clear == 1:
-		clearResultFolder('/udd/cvolantv/Pictures/ScanDetector/ResultCatcher')
 	
-	filename=path+'/'+image
+	filename=path+'/'+fileIm+'/'+image
 	
-
 	
 	#Creating the original image
 	ori = cv2.imread(filename)
@@ -79,7 +75,7 @@ def createSet(path, image,clear, visual=0):
 			crop= im[y:y+h,x:x+w]
 			#Show coordiantes of the center of rectangle. It's only to help to identify the rectangle on the image
 			#Create the image, and give it the name with an unique name
-			dst=capture(im,rect,"/udd/cvolantv/Pictures/ScanDetector/ResultCatcher/"+image+"sR"+str(i)+".tiff")
+			dst=capture(im,rect,path+'/ResultCatcher/'+image+'sR'+str(i)+'.tiff')
 
 		### Different display windows
 			
@@ -179,19 +175,6 @@ def capture (im, rect, path):
 
 	cv2.imwrite(path,capt)
 	return dst
-
-	
-def clearResultFolder(path):
-	""""
-	Delete all files in the given folder
-	
-	Parameter
-	---------
-	path: path of the folder to clearing
-	"""
-	filelist= os.listdir(path)
-	for f in filelist:
-		os.remove(path+'/'+f)
 		
 		
 		

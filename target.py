@@ -6,31 +6,51 @@ import matplotlib.pyplot as plt
 np.set_printoptions(threshold=sys.maxsize)
 
 
-def getTabHeight (im,threshold):
-
-	ret,im = cv2.threshold(im,threshold,255,cv2.THRESH_BINARY)
+def getTabHeight (im,threshLevel):
+	"""
+	Return a list of the height. The height is considering as the total number of white pixels in a column.
+	
+	Parameters
+	----------
+	*im: image of strip's side in black and white
+	*threshLevel: threshold to apply
+	
+	Return
+	------
+	Return a list of height for each column.
+	"""
+	ret,im = cv2.threshold(im,threshLevel,255,cv2.THRESH_BINARY)
 	return ((im!=0).argmax(axis=0))**2, im
 
-def target(path,threshold,visual):
+def target(path,threshLevel,visual):
+	"""
+	From strip's sides, show frequecy associated with Fourier transformation
+	Use this function for combined images.
+	Parameter
+	---------
+	*path: path where are combined strip's side images
+	*threshLevel: threshold to apply
+	*visual: enable or diable windows to opened
+	Return
+	------
+	Return the frequency of bumps of each combined images.
 	
+	""" 	
 	filelist= os.listdir(path)
 	tab=[]
 	for fi in filelist:
 		im = cv2.imread(path+'/'+fi)
 		im = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-		h,imag=getTabHeight(im,threshold)
+		#Put the height to the square for a better visuallisation
+		h,imag=getTabHeight(im,threshLevel)
+		#Substract the average value to the tab
 		tab.append(np.fft.rfft(h-np.mean(h)))
 
 	tabFFT = np.array(tab)
 	t1=tabFFT[1]
 	t2=tabFFT[0]
 	
-		
-		
-
-	
 	rows,cols=im.shape	
-
 	
 	#num number of samples for accuracy
 	t = np.linspace(0, 1, num=cols, endpoint = True)
@@ -42,14 +62,12 @@ def target(path,threshold,visual):
 	
 	if visual == 1:
 		
-		
 		cv2.namedWindow('ImRes', cv2.WINDOW_NORMAL)
 		cv2.imshow('ImRes',imag)
 
 		k = cv2.waitKey(0) & 0xFF
 		if k==27:
 			cv2.destroyAllWindows()
-	
 	
 		# 1/T = frequency
 		f = np.linspace(0, 1 / T, N)
@@ -65,42 +83,77 @@ def target(path,threshold,visual):
 	return getFreq(tb1,20), getFreq(tb2,20)
 	
 	
+	
+	
+def getFreq(fft, begin):
+	"""
+	From an array, return the fequency with the best amplitude
+	
+	Parameters
+	----------
+	*fft: array, result of the fft
+	*begin: hint where to begin the examination. Help to avoid some results of the fft where the best amplitude could be noises.
+	
+	Returns
+	-------
+	*The amplitude of the frequency
+	*The frequence associated to the amplitude
+	"""
 
-def targetSizePeak(im,threshold):
-	
-	return 1/float(getFreq(fourier(im,threshold)[0],20)[1])*im.shape[1]
-	
-	
-def getFreq(fft, th):
+
 	size = fft.size
-	if th == 1:
+	#Special case
+	if begin == 1:
 		print np.max(fft), np.argmax(fft)*2
 		return np.max(fft), np.argmax(fft)*2
 	else:
-		reducFFT = fft[size//th:]
+		#Reduce the array to avoid the 1/begin first values
+		reducFFT = fft[size//begin:]
 
-		print 'Ampl / Freq of area: ',np.max(reducFFT), (size//th+np.argmax(reducFFT))*2
-		return np.max(reducFFT), (size//th+np.argmax(reducFFT))*2
+		print 'Ampl / Freq of area: ',np.max(reducFFT), (size//begin+np.argmax(reducFFT))*2
+		#We need to modify the value because the original array has changed
+		return np.max(reducFFT), (size//begin+np.argmax(reducFFT))*2
 	
 	
-def acquireTarget(im,sizePeak,threshold,visual):
+def acquireTarget(im,threshold,visual):
+	"""
+	Examine the strip at differents small areas. Return the area with the best frequency, and values about it.
+	
+	Parameters
+	----------
+	*im: image of strip's side
+	*threshold: treshold to apply
+	*visual: enable or disable windows to opened
+	
+	Returns
+	-------
+	1-The image of the best area
+	2-The frequency of the area
+	3-Th amplitude of the frequency
+	4-List of the frequencies
+	"""
+
+	#Size of areas
 	scale=700
-	print 'scale: ',scale
+	
 	i=0
 	resArea=i
+	#Reduce image, some image could have columns of full black pixels
 	imRed= im[0:50, 3000:]
+	#Create first area
 	area=imRed[0:50, i:(i+scale)]
 
 	rows, cols =imRed.shape
 	maxAmpl, bestFreq= -1, -1
-	
+	#List all frequency result from Fourier
 	listFreq=[]
 	while i+scale < cols :
+		#Apply Fourier on the area
 		fou, imFou = fourier(area,threshold)
 		#Display area
 
-		colsArea=area.shape[1]
-		t = np.linspace(0, 1, num=colsArea)
+		
+		t = np.linspace(0, 1, num=scale)
 		T = t[1] - t[0]  # sampling interval 
 		N = fou.size
 		
@@ -122,15 +175,18 @@ def acquireTarget(im,sizePeak,threshold,visual):
 			if k==27:
 				cv2.destroyAllWindows()
 			
+		#Extract the best frequency
 		areaTargetAmpl, areaTargetFreq = getFreq(fou,50)
-		
+		#Change the max
 		if areaTargetAmpl > maxAmpl :
 			bestFreq = areaTargetFreq
 			maxAmpl = areaTargetAmpl
 			resArea=i
-
+		#Move the area
+		#The area move only of the half of is size on the strip at each step
 		i=i+(scale//2)
 		area=imRed[0:50, i:i+scale]
+		
 		listFreq.append(areaTargetFreq)
 	
 	
@@ -142,8 +198,23 @@ def acquireTarget(im,sizePeak,threshold,visual):
 	
 	
 def fourier(im, threshold):
+	"""
+	Apply Fourier to an image.
+	
+	Parameters
+	----------
+	*im: image to examine
+	*threshold: threshold to apply
+	
+	Returns
+	-------
+	1-Fourier's results
+	2-Image associated to the results
+	"""
 	rows, cols = im.shape
-	h, imFou = getTabHeight(im, threshold)	
+	#Get the height of strip's columns and put it to the square
+	h, imFou = getTabHeight(im, threshold)
+	#Equilibrate values
 	t = np.fft.rfft(h-np.mean(h))
 	tab = np.abs(t)* 1 / rows
 	return tab, imFou
@@ -154,6 +225,9 @@ def fourier(im, threshold):
 	
 		
 def maxDict(dicti):
+	"""
+	From a dictionnary, return the max value
+	"""
 	maxi=0
 	res=-1
 	for i in dicti:

@@ -62,7 +62,7 @@ def shape(path, fi, pathRes,visual,threshLevel):
 	
 	
 	"""
-
+	print "MQJLC?SF%PM%", path
 	#create the image
 	im = cv2.imread(path+'/'+fi)
 	rows,cols,junk = im.shape
@@ -110,11 +110,10 @@ def shape(path, fi, pathRes,visual,threshLevel):
 	arrSideDown=calcSide(smooth_Down)
 	
 	fi=fi.replace('.tiff','')
-	
 	flatThreshUp=flat(thresh_Up, arrSideUp, visual)
-	cv2.imwrite('/udd/cvolantv/Pictures/ScanDetector/ResultPreparation/'+fi+'Up.tiff', flatThreshUp)
+	cv2.imwrite(pathRes+'/'+fi+'Up.tiff', flatThreshUp)
 	flatThreshDown=flat(thresh_Down,arrSideDown,visual)
-	cv2.imwrite('/udd/cvolantv/Pictures/ScanDetector/ResultPreparation/'+fi+'Down.tiff', flatThreshDown)
+	cv2.imwrite(pathRes+'/'+fi+'Down.tiff', flatThreshDown)
 
 	
 #Return the shape, the drop, of the side of a strip
@@ -205,7 +204,8 @@ def flat(thresh, arrSide,visual):
 	flatThresh=flatThresh[rows-50:rows, 0:cols]
 	
 	if visual==1:
-		cv2.imwrite('/udd/cvolantv/Pictures/ScanDetector/ResultPreparation/flat.tiff', flatThresh)
+		print(path+'/ResultPreparation/flat.tiff')
+		cv2.imwrite(path+'/ResultPreparation/flat.tiff', flatThresh)
 		cv2.namedWindow('Flat', cv2.WINDOW_NORMAL)
 		cv2.imshow('Flat',flatThresh)
 		k = cv2.waitKey(0) & 0xFF

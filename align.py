@@ -11,7 +11,7 @@ from tqdm import tqdm
 #The length of an image
 sizeIm = 6980
 
-path='/udd/cvolantv/Pictures/ScanDetector/ResultPreparation'
+
 
 @jit
 def proportionWB(im):
@@ -54,24 +54,24 @@ def preparation(path):
 	"""
 
 	#Pick up all files in the path folder
-	filelist= os.listdir(path)
-	
+	filelist= os.listdir(path+'/ResultPreparation/')
 	#List to place differents image from the side
 	listUp=[]
 	listDown=[]
 	for fi1 in filelist:
 		#Creating the image and convert it in an black/white image	
-		im1=cv2.imread(path+'/'+fi1)
+		im1=cv2.imread(path+'/ResultPreparation/'+fi1)
+		print(path+'/ResultPreparation/'+fi1)
 		im1=cv2.cvtColor(im1,cv2.COLOR_BGR2GRAY)
 		if 'Up' in fi1:
 			listUp.append(fi1)
 		if 'Down' in fi1:
 			listDown.append(fi1)
 	#Creating the combine image for the differents sides	
-	imResCombUp=prepDiff(listUp,'Up')
-	imResCombDown=prepDiff(listDown,'Down')
+	imResCombUp=prepDiff(path,listUp,'Up')
+	imResCombDown=prepDiff(path,listDown,'Down')
 	
-def prepDiff (listIm,name):
+def prepDiff (path,listIm,name):
 	"""
 	Create an image from all te image in the list. All images are align with a maximum stacking, and apply to create an image with differents shades of gray.
 	Each shades represent a number of layers of superimposed images.
@@ -97,7 +97,7 @@ def prepDiff (listIm,name):
 	ref= listIm.pop(0)
 
 	#Create the reference
-	imRef= cv2.imread(path+'/'+ref)
+	imRef= cv2.imread(path+'/ResultPreparation/'+ref)
 	imRef=cv2.cvtColor(imRef,cv2.COLOR_BGR2GRAY)
 	#Each layer will have the following value 
 	grayScale=float(1)/lenListIm
@@ -106,14 +106,14 @@ def prepDiff (listIm,name):
 	container = cv2.addWeighted(container,1,imRef, grayScale,0)
 	#Do the same for all images
 	for fi in listIm:
-		imComp=cv2.imread(path+'/'+fi)
+		imComp=cv2.imread(path+'/ResultPreparation/'+fi)
 		imComp=cv2.cvtColor(imComp,cv2.COLOR_BGR2GRAY)
 		#Add a layer to the container for each image
-		container = differences(container,imRef,imComp,grayScale,name)
+		container = differences(path,container,imRef,imComp,grayScale,name)
 	return container
 	
 	
-def differences(container,imRef,imComp,grayScale,name):
+def differences(path,container,imRef,imComp,grayScale,name):
 	"""
 	With a reference image and an other image, superimposed the second to a container image with the better alignment possible.
 	
@@ -171,6 +171,6 @@ def differences(container,imRef,imComp,grayScale,name):
 		cv2.destroyAllWindows()
 	'''
 	#Create the file
-	cv2.imwrite('/udd/cvolantv/Pictures/ScanDetector/FFT/ResCombine'+name+'.tiff', container)	
+	cv2.imwrite(path+'/FFT/ResCombine'+name+'.tiff', container)	
 	return container
 
